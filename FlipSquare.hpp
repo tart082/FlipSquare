@@ -2,7 +2,6 @@
 #define FLIPSQUARE_HPP
 
 #include <string>
-#include <vector>
 #include <queue>
 
 enum WinningStatus
@@ -47,6 +46,7 @@ private:
     // 処理を簡単にするために上下左右を1列空ける
     int board_[BoardSize+2][BoardSize+2] = {};
     int NowTurn_ = 1;                       // 現在のターン, 手番ｇ変わるたびに1増える
+    ScoreInfo score_ = ScoreInfo(0, 0);     // 先手と後手のスコア
     Player TurnPlayer_ = Player::First;     // 現在のターンプレイヤー
     std::queue<int>  deck_;                 // 山札
     std::vector<int> first_cards_;          // 先手の手札
@@ -54,11 +54,12 @@ private:
 
 public:
     FlipSquareState();
+    ScoreInfo getScore() const;
     bool isDone() const;
     void advance(const ActionInfo action);
     void distribute_card(const Player player);
     std::vector<ActionInfo> legalActions() const;
-    ScoreInfo calcScore() const;
+    void calcScore();
     std::string toString() const;
 };
 

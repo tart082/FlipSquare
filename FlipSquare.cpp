@@ -4,7 +4,6 @@
 #include <queue>
 #include <random>
 #include <algorithm>
-#include <vector>
 
 std::mt19937 mt_for_deck(0);
 
@@ -24,6 +23,7 @@ FlipSquareState::FlipSquareState()
             }
         }
     }
+    FlipSquareState::calcScore();
     
     // 山札の準備とシャッフル
     const int M = CardSize;
@@ -42,6 +42,11 @@ FlipSquareState::FlipSquareState()
     const int K = CardNum;
     for(int i = 0; i < K; i++) distribute_card(Player::First);
     for(int i = 0; i < K; i++) distribute_card(Player::Second);
+}
+
+ScoreInfo FlipSquareState::getScore() const
+{
+    return score_;
 }
 
 bool FlipSquareState::isDone() const
@@ -90,6 +95,7 @@ void FlipSquareState::advance(const ActionInfo action)
             }
         }
     }
+    FlipSquareState::calcScore();
     NowTurn_++;
 }
 
@@ -138,7 +144,7 @@ std::vector<ActionInfo> FlipSquareState::legalActions() const
     return actions;
 }
 
-ScoreInfo FlipSquareState::calcScore() const
+void FlipSquareState::calcScore()
 {
     int first_score = 0;
     int second_score = 0;
@@ -153,7 +159,7 @@ ScoreInfo FlipSquareState::calcScore() const
             }
         }
     }
-    return ScoreInfo(first_score, second_score);
+    score_ = ScoreInfo(first_score, second_score);
 }
 
 std::string FlipSquareState::toString() const
@@ -217,7 +223,7 @@ std::string FlipSquareState::toString() const
         }
         ss << '\n';
     }
-    auto score = calcScore();
+    auto score = getScore();
     ss << "First  Score : " << score.first_score_ << '\n';
     ss << "Second Score : " << score.second_score_ << '\n';
     ss << '\n';

@@ -88,7 +88,7 @@ void playGame(ActionFunc &func1, ActionFunc &func2)
             if(state.isDone()) break;
         }
     }
-    ScoreInfo score = state.calcScore();
+    ScoreInfo score = state.getScore();
     int FirstScore = score.first_score_;
     int SecondScore = score.second_score_;
     if(FirstScore > SecondScore)
