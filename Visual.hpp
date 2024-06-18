@@ -1,35 +1,21 @@
 ﻿#ifndef VISUAL_H
 #define VISUAL_H
 
-const int32 SizeCard = 3;
-const int32 SizeBoard = 8;
+#include "FlipSquareState.hpp"
 
 class Visual
 {
 private:
-	int32 id;			// カードの種類
-	Grid<bool> square;	// マス目
+	FlipSquareState *state_;	// ゲームの状態
 public:
-	Grid<bool> getSquare(); // マス目
-	void drawCard(int32 X, int32 Y, int32 R);
-	void drawBoard(Grid<bool> B, int32 X, int32 Y, int32 R);
-	void drawPoint(int32 wp, int32 bp, int32 X, int32 Y, int32 R, Font font);
-	/* コンストラクタ */
-	Visual(int32 num)
-	{
-		id = num;
-		for (int32 i = 0; i < SizeCard * SizeCard; i++)
-		{
-			//square[i / 3][i % 3] = ((id & (1<<i)) == (1<<i));
-			if (id % 2 == 1)
-				square[i / 3][i % 3] = 1;
-			else
-				square[i / 3][i % 3] = 0;
-			id /= 2;
-		}
-		id = num;
-		square = { {1, 0, 1}, {1, 1 , 1}, {1, 0, 1} }; // テスト用
-	}
+	Visual(FlipSquareState *state);
+
+	// 欲を言えばdraw関数は盤面のサイズやカードのサイズが変わってもうまく
+	// 表示できるようにしたい。割合で持つなどして
+	void drawFrontCard(int32 X, int32 Y, int32 R, int32 D);
+	void drawBackCard (int32 X, int32 Y, int32 R, int32 D);
+	void drawBoard(int32 X, int32 Y, int32 R);
+	void drawPoint(int32 X, int32 Y, int32 R, Font font);
 };
 
 
