@@ -150,12 +150,6 @@
     <ClCompile Include="FlipSquareState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="playGame.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Controller.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Title.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
