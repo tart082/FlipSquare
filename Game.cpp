@@ -2,7 +2,12 @@
 
 Game::Game(const InitData& init) : IScene{ init }
 {
-	state_ = FlipSquareState(0);
+	state_ = FlipSquareState( Random<int>(1e9) );
+}
+
+bool Game::isFirstTurn() const
+{
+	return state_.getTurnPlayer() == Player::First;
 }
 
 void Game::update()
@@ -11,11 +16,19 @@ void Game::update()
 
 	// 使用する手札を選択している　　→　手札の選択を解除する　or　盤面のマスを選ぶ
 
-	if (!SelectCardFlag_)
+	if ( !SelectCardFlag_ )
 	{
 		for (int32 ind = 0; ind < CardNum; ind++)
 		{
-			const Rect CardCell(FrontX_ + ind * FrontD_, FrontY_, FrontR_);
+			Rect CardCell;
+			if ( isFirstTurn() )
+			{
+				CardCell = Rect(FrontX_ + ind * FrontD_, FrontY_, FrontR_);
+			}
+			else
+			{
+				CardCell = Rect(BackX_ + ind * BackD_, BackY_, BackR_);
+			}
 			if (CardCell.leftClicked())
 			{
 				this->SelectCardFlag_ = true;
@@ -25,7 +38,15 @@ void Game::update()
 	}
 	else
 	{
-		const Rect CardCell(FrontX_ + SelectCardNum_ * FrontD_, FrontY_, FrontR_);
+		Rect CardCell;
+		if ( isFirstTurn() )
+		{
+			CardCell = Rect(FrontX_ + SelectCardNum_ * FrontD_, FrontY_, FrontR_);
+		}
+		else
+		{
+			CardCell = Rect(BackX_ + SelectCardNum_ * BackD_, BackY_, BackR_);
+		}
 		if (CardCell.leftClicked())
 		{
 			this->SelectCardFlag_ = false;
@@ -58,19 +79,11 @@ void Game::update()
 	}
 }
 
-
 void Game::drawFrontCard() const
 {
-	// ターンプレイヤーのカードが手前側に表示される
-
+	// 1Pプレイヤーのカードが手前側に表示される
 	Array<int32> FrontCards;
-
-	if (state_.getTurnPlayer() == Player::First) {
-		FrontCards = state_.getFirstCards();
-	}
-	else {
-		FrontCards = state_.getSecondCards();
-	}
+	FrontCards = state_.getFirstCards();
 
 	int32 r = FrontR_ / (CardNum - 1);
 	for (int32 ind = 0; ind < CardNum; ind++)
@@ -90,7 +103,7 @@ void Game::drawFrontCard() const
 					Rect(x, y, r).draw(Palette::Gray);
 			}
 		}
-		if (Cell.mouseOver())
+		if ( isFirstTurn() && Cell.mouseOver())
 		{
 			if (!SelectCardFlag_)
 			{
@@ -101,7 +114,7 @@ void Game::drawFrontCard() const
 			}
 		}
 	}
-	if (SelectCardFlag_)
+	if ( isFirstTurn() && SelectCardFlag_ )
 	{
 		const Rect CardCell(FrontX_ + SelectCardNum_ * FrontD_, FrontY_, FrontR_);
 		Cursor::RequestStyle(CursorStyle::Hand);
@@ -111,16 +124,10 @@ void Game::drawFrontCard() const
 
 void Game::drawBackCard() const
 {
-	// Notターンプレイヤーのカードが奥に表示される。
-
+	// 2Pプレイヤーのカードが奥に表示される。
 	Array<int32> BackCards;
+	BackCards = state_.getSecondCards();
 
-	if(state_.getTurnPlayer() == Player::First) {
-		BackCards = state_.getSecondCards();
-	}
-	else {
-		BackCards = state_.getFirstCards();
-	}
 	int32 r = BackR_ / (CardNum - 1);
 	for (int32 ind = 0; ind < CardNum; ind++)
 	{
@@ -139,6 +146,34 @@ void Game::drawBackCard() const
 					Rect(x, y, r).draw(Palette::Gray);
 			}
 		}
+		if ( !isFirstTurn() && Cell.mouseOver() )
+		{
+			if (!SelectCardFlag_)
+			{
+				// カーソルを手のアイコンに
+				Cursor::RequestStyle(CursorStyle::Hand);
+				// セルの上に半透明の白を描く
+				Cell.stretched(-2).draw(ColorF{ 1.0, 0.6 });
+			}
+		}
+	}
+	if ( !isFirstTurn() && SelectCardFlag_)
+	{
+		const Rect CardCell(BackX_ + SelectCardNum_ * BackD_, BackY_, BackR_);
+		Cursor::RequestStyle(CursorStyle::Hand);
+		CardCell.stretched(-2).draw(ColorF{ 1.0, 0.6 });
+	}
+}
+
+void Game::drawEmphasizeCard() const
+{
+	if ( isFirstTurn() )
+	{
+		Rect(EmphaX_, EmphaFrontY_, EmphaW_, EmphaH_).draw(Palette::Yellow);
+	}
+	else
+	{
+		Rect(EmphaX_, EmphaBackY_, EmphaW_, EmphaH_).draw(Palette::Yellow);
 	}
 }
 
@@ -202,6 +237,7 @@ void Game::draw() const
 	//背景の色を設定 | Set background color
 	Scene::SetBackground(ColorF{ 0.8, 0.9, 1.0 });
 
+	Game::drawEmphasizeCard();
 	Game::drawFrontCard();
 	Game::drawBackCard();
 	Game::drawBoard();

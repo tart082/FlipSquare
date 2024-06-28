@@ -144,9 +144,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Visual.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FlipSquareState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -824,9 +821,6 @@
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Visual.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FlipSquareState.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -843,6 +837,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Ranking.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseData.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
