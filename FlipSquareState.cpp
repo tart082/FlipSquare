@@ -43,6 +43,7 @@ FlipSquareState::FlipSquareState(int32 seed)
 
 Grid<int32>  FlipSquareState::getBoard()		const { return board_; }
 int32		 FlipSquareState::getNowTurn()		const { return NowTurn_; }
+int32		 FlipSquareState::getLeftTurn()		const { return MaxTurn - NowTurn_ + 1; }
 ScoreInfo	 FlipSquareState::getScore()		const { return score_; }
 Player		 FlipSquareState::getTurnPlayer()	const { return TurnPlayer_; }
 Array<int32> FlipSquareState::getFirstCards()	const { return first_cards_; }

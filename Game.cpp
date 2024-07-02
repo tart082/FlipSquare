@@ -10,73 +10,118 @@ bool Game::isFirstTurn() const
 	return state_.getTurnPlayer() == Player::First;
 }
 
-void Game::update()
+void Game::SelectCard()
 {
-	// 使用する手札を選択していない　→　手札を選択する
-
-	// 使用する手札を選択している　　→　手札の選択を解除する　or　盤面のマスを選ぶ
-
-	if ( !SelectCardFlag_ )
-	{
-		for (int32 ind = 0; ind < CardNum; ind++)
-		{
-			Rect CardCell;
-			if ( isFirstTurn() )
-			{
-				CardCell = Rect(FrontX_ + ind * FrontD_, FrontY_, FrontR_);
-			}
-			else
-			{
-				CardCell = Rect(BackX_ + ind * BackD_, BackY_, BackR_);
-			}
-			if (CardCell.leftClicked())
-			{
-				this->SelectCardFlag_ = true;
-				SelectCardNum_ = ind;
-			}
-		}
-	}
-	else
+	for (int32 ind = 0; ind < CardNum; ind++)
 	{
 		Rect CardCell;
-		if ( isFirstTurn() )
+		if (isFirstTurn())
 		{
-			CardCell = Rect(FrontX_ + SelectCardNum_ * FrontD_, FrontY_, FrontR_);
+			CardCell = Rect(FrontX_ + ind * FrontD_, FrontY_, FrontR_);
 		}
 		else
 		{
-			CardCell = Rect(BackX_ + SelectCardNum_ * BackD_, BackY_, BackR_);
+			CardCell = Rect(BackX_ + ind * BackD_, BackY_, BackR_);
 		}
 		if (CardCell.leftClicked())
 		{
-			this->SelectCardFlag_ = false;
-			SelectCardNum_ = -1;
+			this->isSelectingCard_ = true;
+			SelectCardNum_ = ind;
 		}
-		else
+	}
+}
+void Game::CancelSelectCard()
+{
+	Rect CardCell;
+	if (isFirstTurn())
+	{
+		CardCell = Rect(FrontX_ + SelectCardNum_ * FrontD_, FrontY_, FrontR_);
+	}
+	else
+	{
+		CardCell = Rect(BackX_ + SelectCardNum_ * BackD_, BackY_, BackR_);
+	}
+	if (CardCell.leftClicked())
+	{
+		this->isSelectingCard_ = false;
+		SelectCardNum_ = -1;
+	}
+}
+void Game::SelectBoardGrid()
+{
+	int32 r = BoardR_ / (BoardSize + 2);
+	for (int32 i = 1; i <= BoardSize; i++)
+	{
+		for (int32 j = 1; j <= BoardSize; j++)
 		{
-			int32 r = BoardR_ / (BoardSize + 2);
-			for (int32 i = 1; i <= BoardSize; i++)
-			{
-				for (int32 j = 1; j <= BoardSize; j++)
-				{
-					int32 x = BoardX_ + r * j;
-					int32 y = BoardY_ + r * i;
-					const Rect BoardCell(x, y, r);
+			int32 x = BoardX_ + r * j;
+			int32 y = BoardY_ + r * i;
+			const Rect BoardCell(x, y, r);
 
-					if (BoardCell.leftClicked())
-					{
-						state_.advance(ActionInfo(SelectCardNum_, i, j));
-						SelectCardFlag_ = false;
-						SelectCardNum_ = -1;
-					}
-				}
+			if (BoardCell.leftClicked())
+			{
+				state_.advance(ActionInfo(SelectCardNum_, i, j));
+				isSelectingCard_ = false;
+				SelectCardNum_ = -1;
 			}
 		}
 	}
+}
+
+void Game::updateUserOperation()
+{
+	// 使用する手札を選択していない　→　手札を選択する
+	// 使用する手札を選択している　　→ (1)手札の選択を解除する
+	//											　or
+	//								　  (2)盤面のマスを選ぶ
+	if (!isSelectingCard_)
+	{
+		SelectCard();
+	}
+	else
+	{
+		CancelSelectCard();
+		SelectBoardGrid();
+	}
+}
+
+void Game::updateToPause()
+{
+	if (SimpleGUI::Button(U"Pause", ButtonPause_))
+	{
+		isPausing_ = true;	// ポーズ画面に行く
+	}
+}
+
+void Game::updateWhilePausing()
+{
+	if (isPausing_)
+	{
+		if (SimpleGUI::Button(U"Back to Game", ButtonBackToGame_))
+		{
+			isPausing_ = false;				// ゲームに戻る
+		}
+		if (SimpleGUI::Button(U"Back to Title", ButtonBackToTitle_))
+		{
+			changeScene(State::Title);		// タイトルへ戻る
+		}
+	}
+}
+
+void Game::updateGotoResult()
+{
 	if (state_.isDone())
 	{
 		changeScene(State::Ranking);
 	}
+}
+
+void Game::update()
+{
+	updateUserOperation();
+	updateToPause();
+	updateWhilePausing();
+	updateGotoResult();
 }
 
 void Game::drawFrontCard() const
@@ -105,7 +150,7 @@ void Game::drawFrontCard() const
 		}
 		if ( isFirstTurn() && Cell.mouseOver())
 		{
-			if (!SelectCardFlag_)
+			if (!isSelectingCard_)
 			{
 				// カーソルを手のアイコンに
 				Cursor::RequestStyle(CursorStyle::Hand);
@@ -114,7 +159,7 @@ void Game::drawFrontCard() const
 			}
 		}
 	}
-	if ( isFirstTurn() && SelectCardFlag_ )
+	if ( isFirstTurn() && isSelectingCard_)
 	{
 		const Rect CardCell(FrontX_ + SelectCardNum_ * FrontD_, FrontY_, FrontR_);
 		Cursor::RequestStyle(CursorStyle::Hand);
@@ -148,7 +193,7 @@ void Game::drawBackCard() const
 		}
 		if ( !isFirstTurn() && Cell.mouseOver() )
 		{
-			if (!SelectCardFlag_)
+			if (!isSelectingCard_)
 			{
 				// カーソルを手のアイコンに
 				Cursor::RequestStyle(CursorStyle::Hand);
@@ -157,7 +202,7 @@ void Game::drawBackCard() const
 			}
 		}
 	}
-	if ( !isFirstTurn() && SelectCardFlag_)
+	if ( !isFirstTurn() && isSelectingCard_)
 	{
 		const Rect CardCell(BackX_ + SelectCardNum_ * BackD_, BackY_, BackR_);
 		Cursor::RequestStyle(CursorStyle::Hand);
@@ -205,7 +250,7 @@ void Game::drawBoard() const
 			int32 x = BoardX_ + r * j;
 			int32 y = BoardY_ + r * i;
 			const Rect Cell(x, y, r);
-			if (SelectCardFlag_ && Cell.mouseOver())
+			if (isSelectingCard_ && Cell.mouseOver())
 			{
 				Cursor::RequestStyle(CursorStyle::Hand);
 				// 選んだセルとその近傍に半透明の水色を描く
@@ -232,6 +277,27 @@ void Game::drawPoint() const
 	PointFont_(U"BlackPoint : ", BlackPoint, U"\nvs\nWhitePoint : ", WhitePoint).draw(PointX_ + PointR_ / 4, PointY_);
 }
 
+void Game::drawLeftTurn() const
+{
+	int32 LeftTurn = state_.getLeftTurn();
+	Rect(TurnX_, TurnY_, TurnR_ * 2, TurnR_).draw(Palette::Gray).drawFrame(3, 0, Palette::Orange);
+
+	String text = U" Turns Left";
+	if(LeftTurn <= 1) text = U" Turn Left";
+
+	TurnFont_(U"\n", LeftTurn, text).draw(TurnX_ + TurnR_ / 4, TurnY_); // 残りターン数
+}
+
+void Game::drawPause() const
+{
+	Rect(PauseX_, PauseY_, PauseW_, PauseH_).draw(ColorF{ 0.5, 0.5, 0.5, 0.95 });
+	if (isPausing_)
+	{
+		SimpleGUI::Button(U"Back to Game", ButtonBackToGame_);
+		SimpleGUI::Button(U"Back to Title", ButtonBackToTitle_);
+	}
+}
+
 void Game::draw() const
 {
 	//背景の色を設定 | Set background color
@@ -242,4 +308,9 @@ void Game::draw() const
 	Game::drawBackCard();
 	Game::drawBoard();
 	Game::drawPoint();
+	Game::drawLeftTurn();
+	if ( isPausing_ )
+	{
+		drawPause();
+	}
 }

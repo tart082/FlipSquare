@@ -7,8 +7,9 @@ class Game : public App::Scene
 {
 private:
 	FlipSquareState state_ = FlipSquareState(0);		// ゲームの状態
-	bool  SelectCardFlag_ = false;	// 使用するカードを選んでいるかどうか
+	bool isSelectingCard_ = false;	// 使用するカードを選んでいるかどうか
 	int32 SelectCardNum_ = -1;		// 現在選択しているカード
+	bool isPausing_ = false;		// ポーズ中かどうか
 
 	// 手前(1Pプレイヤー)のカードの基準の座標とカードの幅と間隔
 	int32 FrontX_ = 550;	// 最左カード左辺のX座標
@@ -26,10 +27,8 @@ private:
 	int32 EmphaX_ = 540;	// 
 	int32 EmphaW_ = 820;	// 
 	int32 EmphaH_ = 140;	//
-
 	// 手前(1Pプレイヤー)のカードの強調表示
 	int32 EmphaFrontY_ = 420;
-
 	// 奥(2Pプレイヤー)のカードの強調表示
 	int32 EmphaBackY_  =  40;
 
@@ -42,19 +41,49 @@ private:
 	int32 PointX_ = 550;
 	int32 PointY_ = 250;
 	int32 PointR_ = 100;
-	Font PointFont_{ 20 };
+	Font  PointFont_{ 20 };
+
+	// 残りターン数表示の座標
+	int32 TurnX_ = 800;
+	int32 TurnY_ = 250;
+	int32 TurnR_ = 100;
+	Font  TurnFont_{ 20 };
+
+	// ポーズ画面の座標
+	int32 PauseX_ = 200;
+	int32 PauseY_ = 100;
+	int32 PauseW_ = 800;
+	int32 PauseH_ = 400;
+
+	// 各ボタンの座標
+	Vec2 ButtonPause_		= { 1050, 290 };
+	Vec2 ButtonBackToGame_  = {  500, 250 };
+	Vec2 ButtonBackToTitle_ = {  500, 350 };
 
 public:
 	Game(const InitData& init);
 	bool isFirstTurn() const;
 
+	// Update --------------------------------------------------
+	void SelectCard();			// カードを選ぶ
+	void CancelSelectCard();	// 選んだカードを解除する
+	void SelectBoardGrid();		// カードを使うマスを選ぶ
+
+	void updateUserOperation(); // ユーザのアクションを処理する
+	void updateToPause();
+	void updateWhilePausing();
+	void updateGotoResult();
+
 	void update() override;
 
+	// Draw --------------------------------------------------
 	void drawFrontCard()	const;
 	void drawBackCard()		const;
 	void drawEmphasizeCard()const;
 	void drawBoard()		const;
 	void drawPoint()		const;
+	void drawLeftTurn()		const;
+	void drawPause()		const;
 
 	void draw() const override;
 };

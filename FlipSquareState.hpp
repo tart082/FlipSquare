@@ -21,6 +21,7 @@ public:
 
 	Grid<int32>	 getBoard()		  const;
 	int32		 getNowTurn()	  const;
+	int32		 getLeftTurn()	  const;
 	ScoreInfo	 getScore()		  const;
 	Player		 getTurnPlayer()  const;
 	Array<int32> getFirstCards()  const;
